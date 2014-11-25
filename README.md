@@ -24,7 +24,7 @@ revolt()
       next(env);
     });
   })
-  .get('http://zetta-cloud-2.herokuapp.com')
+  .get('http://localhost:8082')
   .flatMap(function(env) {
     return revolt.buffer(env.response)
       .map(function(data) {

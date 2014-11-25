@@ -3,6 +3,7 @@ var argo = require('argo');
 var revolt = require('../../revolt');
 var buffer = revolt.buffer;
 
+// server
 argo()
   .post('^/test/post$', function(handle) {
     handle('request', function(env, next) {
@@ -16,7 +17,8 @@ argo()
     console.log('Simple POST server started...');
   });
 
-var client = revolt()
+// client
+revolt()
   .post('http://localhost:8102/test/post', 'Hello there!!!')
   .flatMap(function(env) {
     return buffer(env.response); 

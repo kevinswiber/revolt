@@ -45,7 +45,6 @@ Revolt.prototype.request = function(options) {
 
   var observable = Rx.Observable.create(function(observer) {
     self.builder.run(function(env, next) {
-      console.log(env.options);
       var req = env.request = mod.request(env.options);
 
       req.on('error', function(err) {
@@ -80,9 +79,7 @@ Revolt.prototype.request = function(options) {
       });
     });
 
-    if (!self.built) {
-      self.build();
-    }
+    self.build();
 
     var env = {
       request: null,

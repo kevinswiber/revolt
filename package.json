@@ -16,5 +16,13 @@
     "client"
   ],
   "author": "Kevin Swiber <kswiber@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kevinswiber/revolt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kevinswiber/revolt/issues"
+  },
+  "homepage": "https://github.com/kevinswiber/revolt"
 }

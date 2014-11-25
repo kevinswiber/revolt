@@ -1,3 +1,19 @@
+# revolt
+
+A reactive, pipelined HTTP client.
+
+* Add common request/response pipeline handlers.
+* Use reactive programming to consume responses.
+
+## Install
+
+```
+npm install revolt
+```
+
+## Example
+
+```js
 var Rx = require('rx');
 var revolt = require('../revolt');
 
@@ -14,5 +30,4 @@ revolt()
     function(env) {
       console.log(env.response.body);
     });
-
-
+```

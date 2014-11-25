@@ -1,6 +1,6 @@
 {
   "name": "revolt",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A reactive, pipelined HTTP client.",
   "main": "revolt.js",
   "directories": {
@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/kevinswiber/revolt",
   "dependencies": {
-    "rx": "^2.3.18"
+    "rx": "^2.3.18",
+    "pipeworks": "^1.2.1"
   }
 }

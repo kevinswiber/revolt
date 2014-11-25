@@ -30,7 +30,7 @@ argo()
   })
   .listen(8082);
 
-// succesful client
+// successful client
 revolt()
   .use(function(handle) {
     handle('request', function(env, next) {

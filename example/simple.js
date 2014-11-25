@@ -1,7 +1,14 @@
 var revolt = require('../revolt');
 
 revolt()
-  .get('http://zetta-cloud-2.herokuapp.com')
+  .use(function(handle) {
+    handle('request', function(env, next) {
+      var auth = new Buffer('user:password').toString('base64');
+      env.options.headers['authorization'] = 'Basic ' + auth;
+      next(env);
+    });
+  })
+  .get('http://localhost:3000')
   .flatMap(function(env) {
     return revolt.buffer(env.response)
       .map(function(data) {

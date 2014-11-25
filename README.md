@@ -17,6 +17,13 @@ npm install revolt
 var revolt = require('../revolt');
 
 revolt()
+  .use(function(handle) {
+    handle('request', function(env, next) {
+      var auth = new Buffer('user:password').toString('base64');
+      env.options.headers['authorization'] = 'Basic ' + auth;
+      next(env);
+    });
+  })
   .get('http://zetta-cloud-2.herokuapp.com')
   .flatMap(function(env) {
     return revolt.buffer(env.response)

@@ -29,6 +29,7 @@ Revolt.prototype.request = function(options) {
 
   options = options || {};
   options.method = options.method || 'GET';
+  options.headers = options.headers || {};
 
   var uri = options.uri || options.url;
   var parsed = url.parse(uri);
@@ -43,19 +44,14 @@ Revolt.prototype.request = function(options) {
   var mod = parsed.protocol === 'https:' ? https : http;
 
   var observable = Rx.Observable.create(function(observer) {
-    var req = mod.request(options);
-
-    req.on('error', function(err) {
-      observer.onError(err);
-    });
-
-    var env = {
-      request: req,
-      options: options,
-      response: null
-    };
-
     self.builder.run(function(env, next) {
+      console.log(env.options);
+      var req = env.request = mod.request(env.options);
+
+      req.on('error', function(err) {
+        observer.onError(err);
+      });
+
       req.on('response', function(res) {
         res.on('error', function(err) {
           observer.onError(err);
@@ -67,9 +63,9 @@ Revolt.prototype.request = function(options) {
 
       if (env.options.body) {
         if (env.options.body instanceof Stream) {
-          env.request.pipe(options.body)
+          env.request.pipe(env.options.body)
         } else {
-          env.request.end(options.body);
+          env.request.end(env.options.body);
         }
       } else {
         env.request.end();
@@ -87,6 +83,12 @@ Revolt.prototype.request = function(options) {
     if (!self.built) {
       self.build();
     }
+
+    var env = {
+      request: null,
+      options: options,
+      response: null
+    };
 
     self.built.flow(env);
   });

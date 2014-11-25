@@ -1,4 +1,3 @@
-var Rx = require('rx');
 var revolt = require('../revolt');
 
 revolt()

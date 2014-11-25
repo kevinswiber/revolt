@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/kevinswiber/revolt/issues"
   },
-  "homepage": "https://github.com/kevinswiber/revolt"
+  "homepage": "https://github.com/kevinswiber/revolt",
+  "dependencies": {
+    "rx": "^2.3.18"
+  }
 }

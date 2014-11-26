@@ -57,6 +57,7 @@ Revolt.prototype.request = function(options) {
         });
 
         env.response = res;
+        env.response.body = res;
         next(env);
       });
 

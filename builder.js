@@ -3,11 +3,9 @@ var pipeworks = require('pipeworks');
 var Builder = module.exports = function() {
   this.app = null;
   this._middleware = [];
-  this._requestPipeline = pipeworks();
-  this._responsePipeline = pipeworks();
   this._pipelineMap = {
-    request: this._requestPipeline,
-    response: this._responsePipeline
+    request: null,
+    response: null
   };
   this._errorHandler = null;
 };
@@ -35,6 +33,9 @@ Builder.prototype._buildHandler = function eventedBuildHandler(event, options, h
 };
 
 Builder.prototype.build = function() {
+  this._pipelineMap.request = pipeworks();
+  this._pipelineMap.response = pipeworks();
+
   var handle = this._buildHandler.bind(this);
 
   this._middleware.forEach(function(middleware) {
@@ -43,9 +44,9 @@ Builder.prototype.build = function() {
 
   var appPipeline = pipeworks().fit(this.app);
 
-  var pipeline = this._requestPipeline
+  var pipeline = this._pipelineMap.request
     .join(appPipeline)
-    .join(this._responsePipeline.reverse());
+    .join(this._pipelineMap.response.reverse());
 
   if (this._errorHandler) {
     pipeline.fault(this._errorHandler);

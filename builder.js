@@ -1,11 +1,11 @@
-var pipeworks = require('pipeworks');
+var RxPipeline = require('./rx_pipeline');
 
 var Builder = module.exports = function() {
   this.app = null;
   this._middleware = [];
-  this._pipelineMap = {
-    request: null,
-    response: null
+  this.pipelines = {
+    request: [],
+    response: [] 
   };
   this._errorHandler = null;
 };
@@ -25,16 +25,26 @@ Builder.prototype._buildHandler = function eventedBuildHandler(event, options, h
     }
   }
 
-  if (!(event in this._pipelineMap)) {
-    this._pipelineMap[event] = pipeworks();
+  if (!(event in this.pipelines)) {
+    this.pipelines[event] = [];
   }
 
-  this._pipelineMap[event].fit(options, handler);
+  if (typeof options === 'function') {
+    handler = options;
+    options = null;
+  }
+
+  var pipe = {
+    options: options,
+    handler: handler
+  };
+
+  this.pipelines[event].push(pipe);
 };
 
 Builder.prototype.build = function() {
-  this._pipelineMap.request = pipeworks();
-  this._pipelineMap.response = pipeworks();
+  this.pipelines.request = [];
+  this.pipelines.response = [];
 
   var handle = this._buildHandler.bind(this);
 
@@ -42,15 +52,32 @@ Builder.prototype.build = function() {
     middleware(handle);
   });
 
-  var appPipeline = pipeworks().fit(this.app);
+  var requestPipeline = this._preparePipeline(this.pipelines.request);
+  var responsePipeline = this._preparePipeline(this.pipelines.response.reverse());
 
-  var pipeline = this._pipelineMap.request
-    .join(appPipeline)
-    .join(this._pipelineMap.response.reverse());
+  var pipes = requestPipeline.concat([this.app]).concat(responsePipeline);
 
-  if (this._errorHandler) {
-    pipeline.fault(this._errorHandler);
-  }
+  return new RxPipeline(pipes);
+};
 
-  return pipeline.build();
+Builder.prototype._preparePipeline = function(pipeline) {
+  var pre = [];
+  var pipes = [];
+  var post = [];
+
+  pipeline.forEach(function(pipe) {
+    if (pipe.options && pipe.options.affinity) {
+      if (pipe.options.affinity === 'hoist') {
+        pre.push(pipe.handler);
+      } else if (pipe.options.affinity === 'sink') {
+        post.push(pipe.handler);
+      } else {
+        pipes.push(pipe.handler);
+      }
+    } else {
+      pipes.push(pipe.handler);
+    }
+  });
+
+  return pre.concat(pipes).concat(post);
 };

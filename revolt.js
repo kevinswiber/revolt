@@ -43,55 +43,47 @@ Revolt.prototype.request = function(options) {
 
   var mod = parsed.protocol === 'https:' ? https : http;
 
-  var observable = Rx.Observable.create(function(observer) {
-    self.builder.run(function(env, next) {
-      var req = env.request = mod.request(env.options);
+  self.builder.run(function(pipeline) {
+    return pipeline.flatMap(function(env) {
+      return Rx.Observable.create(function(observer) {
+        var req = env.request = mod.request(env.options);
 
-      req.on('error', function(err) {
-        observer.onError(err);
-      });
-
-      req.on('response', function(res) {
-        res.on('error', function(err) {
+        req.on('error', function(err) {
           observer.onError(err);
         });
 
-        env.response = res;
-        env.response.body = res;
-        next(env);
-      });
+        req.on('response', function(res) {
+          res.on('error', function(err) {
+            observer.onError(err);
+          });
 
-      if (env.options.body) {
-        if (env.options.body instanceof Stream) {
-          env.request.pipe(env.options.body)
+          env.response = res;
+          env.response.body = res;
+          observer.onNext(env);
+        });
+
+        if (env.options.body) {
+          if (env.options.body instanceof Stream) {
+            env.request.pipe(env.options.body)
+          } else {
+            env.request.end(env.options.body);
+          }
         } else {
-          env.request.end(env.options.body);
+          env.request.end();
         }
-      } else {
-        env.request.end();
-      }
-    });
-
-    self.builder.use(function(handle) {
-      handle('response', { affinity: 'sink' }, function(env, next) {
-        observer.onNext(env);
-        observer.onCompleted();
-        next(env);
       });
     });
-
-    self.build();
-
-    var env = {
-      request: null,
-      options: options,
-      response: null
-    };
-
-    self.built.flow(env);
   });
 
-  return observable;
+  var env = {
+    request: null,
+    options: options,
+    response: null
+  };
+
+  self.build();
+
+  return self.built.flow(env);
 };
 
 Revolt.prototype.get = function(requestUrl, options) {

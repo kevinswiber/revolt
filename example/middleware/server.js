@@ -33,10 +33,13 @@ argo()
 // successful client
 revolt()
   .use(function(handle) {
-    handle('request', function(env, next) {
-      var auth = new Buffer('user:password').toString('base64');
-      env.options.headers['authorization'] = 'Basic ' + auth;
-      next(env);
+    handle('request', function(pipeline) {
+      return pipeline.map(function(env) {
+        var auth = new Buffer('user:password').toString('base64');
+        env.options.headers['authorization'] = 'Basic ' + auth;
+
+        return env;
+      });
     });
   })
   .get('http://localhost:8082')

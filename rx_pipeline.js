@@ -4,7 +4,7 @@ var RxPipeline = module.exports = function(pipes) {
   this.pipes = pipes || [];
 };
 
-RxPipeline.prototype.flow = function(context) {
+RxPipeline.prototype.observe = function(context) {
   if (!this.pipes.length) {
     return;
   }

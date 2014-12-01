@@ -3,7 +3,7 @@ var RxPipeline = require('./rx_pipeline');
 var Builder = module.exports = function() {
   this.app = null;
   this._middleware = [];
-  this.pipelines = {
+  this._pipelines = {
     request: [],
     response: [] 
   };
@@ -25,8 +25,8 @@ Builder.prototype._buildHandler = function eventedBuildHandler(event, options, h
     }
   }
 
-  if (!(event in this.pipelines)) {
-    this.pipelines[event] = [];
+  if (!(event in this._pipelines)) {
+    this._pipelines[event] = [];
   }
 
   if (typeof options === 'function') {
@@ -39,12 +39,12 @@ Builder.prototype._buildHandler = function eventedBuildHandler(event, options, h
     handler: handler
   };
 
-  this.pipelines[event].push(pipe);
+  this._pipelines[event].push(pipe);
 };
 
 Builder.prototype.build = function() {
-  this.pipelines.request = [];
-  this.pipelines.response = [];
+  this._pipelines.request = [];
+  this._pipelines.response = [];
 
   var handle = this._buildHandler.bind(this);
 
@@ -52,11 +52,16 @@ Builder.prototype.build = function() {
     middleware(handle);
   });
 
-  var requestPipeline = this._preparePipeline(this.pipelines.request);
-  var responsePipeline = this._preparePipeline(this.pipelines.response.reverse());
+  var requestPipeline = this._preparePipeline(this._pipelines.request);
+  var responsePipeline = this._preparePipeline(this._pipelines.response.reverse());
 
   var pipes = requestPipeline.concat([this.app]).concat(responsePipeline);
 
+  return new RxPipeline(pipes);
+};
+
+Builder.prototype.prepareAndBuild = function(event) {
+  var pipes = this._preparePipeline(this._pipelines[event]);
   return new RxPipeline(pipes);
 };
 

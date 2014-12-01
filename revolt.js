@@ -78,12 +78,15 @@ Revolt.prototype.request = function(options) {
   var env = {
     request: null,
     options: options,
-    response: null
+    response: null,
+    pipeline: function(event) {
+      return self.builder.prepareAndBuild(event);
+    }
   };
 
   self.build();
 
-  return self.built.flow(env);
+  return self.built.observe(env);
 };
 
 Revolt.prototype.get = function(requestUrl, options) {

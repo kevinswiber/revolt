@@ -36,7 +36,7 @@ revolt()
     handle('request', function(pipeline) {
       return pipeline.map(function(env) {
         var auth = new Buffer('user:password').toString('base64');
-        env.options.headers['authorization'] = 'Basic ' + auth;
+        env.request.headers['authorization'] = 'Basic ' + auth;
 
         return env;
       });

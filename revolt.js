@@ -46,7 +46,7 @@ Revolt.prototype.request = function(options) {
   self.builder.run(function(pipeline) {
     return pipeline.flatMap(function(env) {
       return Rx.Observable.create(function(observer) {
-        var req = env.request = mod.request(env.options);
+        var req = mod.request(env.request);
 
         req.on('error', function(err) {
           observer.onError(err);
@@ -62,22 +62,21 @@ Revolt.prototype.request = function(options) {
           observer.onNext(env);
         });
 
-        if (env.options.body) {
-          if (env.options.body instanceof Stream) {
-            env.request.pipe(env.options.body)
+        if (env.request.body) {
+          if (env.request.body instanceof Stream) {
+            req.pipe(env.request.body)
           } else {
-            env.request.end(env.options.body);
+            req.end(env.request.body);
           }
         } else {
-          env.request.end();
+          req.end();
         }
       });
     });
   });
 
   var env = {
-    request: null,
-    options: options,
+    request: options,
     response: null,
     pipeline: function(event) {
       return self.builder.prepareAndBuild(event);

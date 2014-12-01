@@ -61,6 +61,10 @@ Builder.prototype.build = function() {
 };
 
 Builder.prototype.prepareAndBuild = function(event) {
+  if (!this._pipelines[event]) {
+    return;
+  }
+
   var pipes = this._preparePipeline(this._pipelines[event]);
   return new RxPipeline(pipes);
 };

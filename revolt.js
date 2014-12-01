@@ -2,7 +2,8 @@ var http = require('http');
 var https = require('https');
 var Stream = require('stream').Stream;
 var url = require('url');
-var Rx = require('Rx');
+var Rx = require('rx');
+var WebSocket = require('ws');
 var Builder = require('./builder');
 
 var Revolt = module.exports = function() {
@@ -28,52 +29,81 @@ Revolt.prototype.request = function(options) {
   var self = this;
 
   options = options || {};
-  options.method = options.method || 'GET';
-  options.headers = options.headers || {};
-
   var uri = options.uri || options.url;
   var parsed = url.parse(uri);
 
-  if (uri) {
-    options.hostname = parsed.hostname;
-    options.port = parsed.port;
-    options.path = parsed.path;
-    options.auth = parsed.auth;
-  };
+  options.method = options.method || 'GET';
+  options.headers = options.headers || {};
+  options.hostname = parsed.hostname;
+  options.port = parsed.port;
+  options.path = parsed.path;
+  options.auth = parsed.auth;
 
-  var mod = parsed.protocol === 'https:' ? https : http;
+  if (parsed.protocol === 'ws:' || parsed.protocol === 'wss:') {
+    self.builder.run(function(pipeline) {
+      return pipeline.map(function(env) {
+        var opts = {
+          headers: options.headers,
+          host: options.host
+        };
 
-  self.builder.run(function(pipeline) {
-    return pipeline.flatMap(function(env) {
-      return Rx.Observable.create(function(observer) {
-        var req = mod.request(env.request);
+        env.response = new WebSocket(uri, opts);
+        env.response.headers = {};
 
-        req.on('error', function(err) {
-          observer.onError(err);
+        ['open', 'message', 'error', 'close'].forEach(function(ev) {
+          env.response.on(ev, function(arg0) {
+            var pipeline = env.pipeline('websocket:' + ev);
+
+            if (pipeline) {
+              if (ev === 'message') {
+                env.response.message = arg0;
+              } else if (ev === 'error') {
+                ev.response.error = arg0;
+              }
+
+              pipeline.observe(env).subscribe(Rx.Observer.create());
+            }
+          });
         });
 
-        req.on('response', function(res) {
-          res.on('error', function(err) {
+        return env;
+      });
+    });
+  } else {
+    var mod = parsed.protocol === 'https:' ? https : http;
+
+    self.builder.run(function(pipeline) {
+      return pipeline.flatMap(function(env) {
+        return Rx.Observable.create(function(observer) {
+          var req = mod.request(env.request);
+
+          req.on('error', function(err) {
             observer.onError(err);
           });
 
-          env.response = res;
-          env.response.body = res;
-          observer.onNext(env);
-        });
+          req.on('response', function(res) {
+            res.on('error', function(err) {
+              observer.onError(err);
+            });
 
-        if (env.request.body) {
-          if (env.request.body instanceof Stream) {
-            req.pipe(env.request.body)
+            env.response = res;
+            env.response.body = res;
+            observer.onNext(env);
+          });
+
+          if (env.request.body) {
+            if (env.request.body instanceof Stream) {
+              req.pipe(env.request.body)
+            } else {
+              req.end(env.request.body);
+            }
           } else {
-            req.end(env.request.body);
+            req.end();
           }
-        } else {
-          req.end();
-        }
+        });
       });
     });
-  });
+  }
 
   var env = {
     request: options,

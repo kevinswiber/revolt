@@ -16,7 +16,7 @@ npm install revolt
 ```js
 var revolt = require('../revolt');
 
-revolt()
+var client = revolt()
   .use(function(handle) {
     handle('request', function(pipeline) {
       return pipeline.map(function(env) {
@@ -26,7 +26,9 @@ revolt()
         return env;
       });
     });
-  })
+  });
+
+client
   .get('http://localhost:8082')
   .flatMap(function(env) {
     return revolt.buffer(env.response)
@@ -35,8 +37,7 @@ revolt()
         return env;
       });
   })
-  .subscribe(
-    function(env) {
-      console.log(env.response.body);
-    });
+  .subscribe(function(env) {
+    console.log(env.response.body);
+  });
 ```

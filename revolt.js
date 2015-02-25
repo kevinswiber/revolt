@@ -58,7 +58,7 @@ Revolt.prototype.request = function(options) {
               if (ev === 'message') {
                 env.response.message = arg0;
               } else if (ev === 'error') {
-                ev.response.error = arg0;
+                env.response.error = arg0;
               }
 
               pipeline.observe(env).subscribe(Rx.Observer.create());
@@ -81,11 +81,26 @@ Revolt.prototype.request = function(options) {
             observer.onError(err);
           });
 
+          req.on('upgrade', function(res, socket, head) {
+            res.on('error', function(err) {
+              observer.onError(err);
+            });
+
+            env.upgrade = true;
+            env.response = res;
+            env.response.body = res;
+            env.response.socket = socket;
+            env.response.head = head;
+
+            observer.onNext(env);
+          });
+
           req.on('response', function(res) {
             res.on('error', function(err) {
               observer.onError(err);
             });
 
+            env.upgrade = false;
             env.response = res;
             env.response.body = res;
             observer.onNext(env);

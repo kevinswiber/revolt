@@ -50,6 +50,10 @@ Revolt.prototype.request = function(options) {
         env.response = new WebSocket(uri, opts);
         env.response.headers = {};
 
+        env.response.on('close', function() {
+          observer.onCompleted();
+        });
+
         ['open', 'message', 'error', 'close'].forEach(function(ev) {
           env.response.on(ev, function(arg0) {
             var pipeline = env.pipeline('websocket:' + ev);
@@ -86,16 +90,30 @@ Revolt.prototype.request = function(options) {
               observer.onError(err);
             });
 
+            res.on('end', function() {
+              observer.onCompleted();
+            });
+
             env.upgrade = true;
             env.response = res;
             env.response.body = res;
             env.response.socket = socket;
             env.response.head = head;
 
-            observer.onNext(env);
+            var pipeline = env.pipeline('upgrade');
+
+            if (pipeline && pipeline.pipes.length) {
+              pipeline.observe(env).subscribe(observer);
+            } else {
+              observer.onNext(env);
+            }
           });
 
           req.on('response', function(res) {
+            res.on('end', function() {
+              observer.onCompleted();
+            });
+
             res.on('error', function(err) {
               observer.onError(err);
             });

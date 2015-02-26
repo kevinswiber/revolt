@@ -5,6 +5,7 @@ var Builder = module.exports = function() {
   this._middleware = [];
   this._pipelines = {
     request: [],
+    upgrade: [],
     response: [] 
   };
   this._errorHandler = null;

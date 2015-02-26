@@ -79,7 +79,7 @@ Revolt.prototype.request = function(options) {
     self.builder.run(function(pipeline) {
       return pipeline.flatMap(function(env) {
         return Rx.Observable.create(function(observer) {
-          var req = mod.request(env.request);
+          var req = env.request = mod.request(env.request);
 
           req.on('error', function(err) {
             observer.onError(err);
@@ -90,9 +90,9 @@ Revolt.prototype.request = function(options) {
               observer.onError(err);
             });
 
-            res.on('end', function() {
+            /*res.on('end', function() {
               observer.onCompleted();
-            });
+            });*/
 
             env.upgrade = true;
             env.response = res;
@@ -110,9 +110,9 @@ Revolt.prototype.request = function(options) {
           });
 
           req.on('response', function(res) {
-            res.on('end', function() {
+            /*res.on('end', function() {
               observer.onCompleted();
-            });
+            });*/
 
             res.on('error', function(err) {
               observer.onError(err);

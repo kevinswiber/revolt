@@ -79,7 +79,12 @@ Revolt.prototype.request = function(options) {
     self.builder.run(function(pipeline) {
       return pipeline.flatMap(function(env) {
         return Rx.Observable.create(function(observer) {
+          var body = env.request.body;
+          var rawRequest = env.request;
           var req = env.request = mod.request(env.request);
+
+          env.request.raw = rawRequest;
+          req.body = body;
 
           req.on('error', function(err) {
             observer.onError(err);

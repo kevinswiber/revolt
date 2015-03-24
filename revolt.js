@@ -50,9 +50,9 @@ Revolt.prototype.request = function(options) {
         env.response = new WebSocket(uri, opts);
         env.response.headers = {};
 
-        env.response.on('close', function() {
+        /*env.response.on('close', function() {
           observer.onCompleted();
-        });
+        });*/
 
         ['open', 'message', 'error', 'close'].forEach(function(ev) {
           env.response.on(ev, function(arg0) {

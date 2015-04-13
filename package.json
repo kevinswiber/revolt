@@ -27,6 +27,7 @@
   "homepage": "https://github.com/kevinswiber/revolt",
   "dependencies": {
     "rx": "^2.3.18",
+    "rx-node": "^1.0.0",
     "ws": "^0.5.0"
   }
 }

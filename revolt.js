@@ -3,6 +3,7 @@ var https = require('https');
 var Stream = require('stream').Stream;
 var url = require('url');
 var Rx = require('rx');
+Rx.Node = require('rx-node');
 var WebSocket = require('ws');
 var Builder = require('./builder');
 

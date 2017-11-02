@@ -1,4 +1,3 @@
-var Rx = require('rx');
 var argo = require('argo');
 var revolt = require('../../revolt');
 var buffer = revolt.buffer;

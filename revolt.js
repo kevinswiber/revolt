@@ -2,8 +2,7 @@ var http = require('http');
 var https = require('https');
 var Stream = require('stream').Stream;
 var url = require('url');
-var Rx = require('rx');
-Rx.Node = require('rx-node');
+var Rx = require('rxjs');
 var WebSocket = require('ws');
 var Builder = require('./builder');
 
@@ -111,7 +110,7 @@ Revolt.prototype.request = function(options) {
             if (pipeline && pipeline.pipes.length) {
               pipeline.observe(env).subscribe(observer);
             } else {
-              observer.onNext(env);
+              observer.next(env);
             }
           });
 
@@ -127,7 +126,7 @@ Revolt.prototype.request = function(options) {
             env.upgrade = false;
             env.response = res;
             env.response.body = res;
-            observer.onNext(env);
+            observer.next(env);
           });
 
           if (env.request.body) {
@@ -215,14 +214,24 @@ Revolt.prototype.options = function(requestUrl) {
 };
 
 Revolt.buffer = function(response) {
-  return Rx.Node.fromStream(response)
-    .reduce(function(acc, data) {
-      acc.length += data.length;
-      acc.buffers.push(data);
+  return Rx.Observable.create(observer => {
+    const buffers = [];
+    let size = 0;
+    response.on('readable', () => {
+      let data;
+      while ((data = response.read()) != null) {
+        buffers.push(data);
+        size += data.length;
+      }
+    });
 
-      return acc;
-    }, { length: 0, buffers: [] })
-    .map(function(body) {
-      return Buffer.concat(body.buffers, body.length);
-    })
+    response.on('end', () => {
+      observer.next(Buffer.concat(buffers, size));
+      observer.complete();
+    });
+
+    response.on('error', err => {
+      observer.error(err);
+    });
+  });
 };

@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 
 var RxPipeline = module.exports = function(pipes) {
   this.pipes = pipes || [];
@@ -9,7 +9,7 @@ RxPipeline.prototype.observe = function(context) {
     return;
   }
 
-  var origin = Rx.Observable.fromArray([context]);
+  var origin = Rx.Observable.from([context]);
   var latest = origin;
 
   this.pipes.forEach(function(pipe) {

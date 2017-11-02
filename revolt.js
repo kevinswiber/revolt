@@ -87,12 +87,12 @@ Revolt.prototype.request = function(options) {
           req.body = body;
 
           req.on('error', function(err) {
-            observer.onError(err);
+            observer.error(err);
           });
 
           req.on('upgrade', function(res, socket, head) {
             res.on('error', function(err) {
-              observer.onError(err);
+              observer.error(err);
             });
 
             /*res.on('end', function() {
@@ -120,7 +120,7 @@ Revolt.prototype.request = function(options) {
             });*/
 
             res.on('error', function(err) {
-              observer.onError(err);
+              observer.error(err);
             });
 
             env.upgrade = false;

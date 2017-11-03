@@ -1,6 +1,6 @@
 {
   "name": "revolt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A reactive, pipelined HTTP client.",
   "main": "revolt.js",
   "directories": {

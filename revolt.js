@@ -86,6 +86,10 @@ Revolt.prototype.request = function(options) {
           env.request.raw = rawRequest;
           req.body = body;
 
+          req.on('close', function() {
+            observer.complete();
+          });
+
           req.on('error', function(err) {
             observer.error(err);
           });
@@ -94,10 +98,6 @@ Revolt.prototype.request = function(options) {
             res.on('error', function(err) {
               observer.error(err);
             });
-
-            /*res.on('end', function() {
-              observer.onCompleted();
-            });*/
 
             env.upgrade = true;
             env.response = res;
@@ -115,10 +115,6 @@ Revolt.prototype.request = function(options) {
           });
 
           req.on('response', function(res) {
-            /*res.on('end', function() {
-              observer.onCompleted();
-            });*/
-
             res.on('error', function(err) {
               observer.error(err);
             });

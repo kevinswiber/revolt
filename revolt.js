@@ -27,6 +27,14 @@ Revolt.prototype.build = function() {
 
 Revolt.prototype.request = function(options) {
   var self = this;
+  return Rx.Observable.create(function(observer) {
+    // wrap connection in an observable, supports retries
+    return self._request(options).subscribe(observer);
+  });
+};
+
+Revolt.prototype._request = function(options) {
+  var self = this;
 
   options = options || {};
   var uri = options.uri || options.url;

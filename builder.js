@@ -54,7 +54,7 @@ Builder.prototype.build = function() {
   });
 
   var requestPipeline = this._preparePipeline(this._pipelines.request);
-  var responsePipeline = this._preparePipeline(this._pipelines.response.reverse());
+  var responsePipeline = this._preparePipeline(this._pipelines.response);
 
   var pipes = requestPipeline.concat([this.app]).concat(responsePipeline);
 

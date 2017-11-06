@@ -28,7 +28,6 @@ Revolt.prototype.build = function() {
 Revolt.prototype.request = function(options) {
   var self = this;
   return Rx.Observable.create(function(observer) {
-    // wrap connection in an observable, supports retries
     return self._request(options).subscribe(observer);
   });
 };
@@ -88,10 +87,9 @@ Revolt.prototype._request = function(options) {
       return pipeline.flatMap(function(env) {
         return Rx.Observable.create(function(observer) {
           var body = env.request.body;
-          var rawRequest = env.request;
-          var req = env.request = mod.request(env.request);
+          var opts = Object.assign({}, options, env.request);
+          var req = env.request = mod.request(opts);
 
-          env.request.raw = rawRequest;
           req.body = body;
 
           req.on('close', function() {
